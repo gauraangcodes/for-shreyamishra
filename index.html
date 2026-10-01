@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Happy Girlfriend's Day 💌</title>
+
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@500;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tailwind CSS (+ custom font families) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            script: ['"Dancing Script"', "cursive"],
+            serif: ['"Playfair Display"', "Georgia", "serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- React + Babel (Babel lets the browser understand JSX) -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin
+    src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <style>
+    /* ============================================================
+         COLORS (change these to restyle the whole site)
+         Light mode is the default; dark mode kicks in automatically
+         if the phone/computer is set to dark.
+         ============================================================ */
+    :root {
+      --bg: #fff0f2;
+      /* page background */
+      --ink: #4a1626;
+      /* main text */
+      --soft: #9d4a62;
+      /* secondary text */
+      --card: #ffffff;
+      /* card background */
+      --rose: #be123c;
+      /* accent (headings, buttons) */
+      --line: #f5c2cd;
+      /* borders */
+
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1a0810;
+        --ink: #ffe4ea;
+        --soft: #f0a5b8;
+        --card: #2b111b;
+        --rose: #fb7185;
+        --line: #5b2334;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #1a0810;
+      --ink: #ffe4ea;
+      --soft: #f0a5b8;
+      --card: #2b111b;
+      --rose: #fb7185;
+      --line: #5b2334;
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+         ANIMATIONS
+         ============================================================ */
+
+    /* Background hearts drifting upward */
+    @keyframes floatUp {
+      0% {
+        transform: translateY(105vh) rotate(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.6;
+      }
+
+      100% {
+        transform: translateY(-12vh) rotate(300deg);
+        opacity: 0;
+      }
+    }
+
+    /* Hearts that pop out when you click (--dx / --dy set from JS) */
+    @keyframes burst {
+      0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--dx), var(--dy)) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    /* Envelope gently floating up and down */
+    @keyframes bob {
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* Wax seal heartbeat */
+    @keyframes beat {
+      50% {
+        transform: scale(1.12);
+      }
+    }
+
+    /* Fade + slide up entrance */
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+    }
+
+    /* Blinking typing cursor */
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .fh {
+      opacity: 0;
+    }
+
+    .fade {
+      animation: fade 0.9s ease both;
+    }
+
+    .caret {
+      animation: blink 1s steps(1) infinite;
+    }
+
+    /* ============================================================
+         ENVELOPE
+         Layers, back to front:
+           .eb  back of envelope (dark red)
+           .lt  the letter inside
+           .ef  front pocket (V-shaped, covers bottom of letter)
+           .fl  top flap (rotates open in 3D)
+           .sl  wax seal
+         Adding the class "open" to .env triggers the opening.
+         ============================================================ */
+    .env {
+      position: relative;
+      width: min(84vw, 340px);
+      height: min(56vw, 226px);
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 0;
+      perspective: 900px;
+      /* needed for the 3D flap */
+      filter: drop-shadow(0 22px 28px rgba(120, 0, 30, 0.35));
+      animation: bob 3s ease-in-out infinite;
+    }
+
+    .env.open {
+      animation: none;
+      cursor: default;
+    }
+
+    .env span {
+      position: absolute;
+      display: block;
+    }
+
+    .eb {
+      inset: 0;
+      background: #9f1239;
+      border-radius: 6px;
+      z-index: 0;
+    }
+
+    .lt {
+      left: 6%;
+      right: 6%;
+      top: 8%;
+      height: 86%;
+      background: #fffaf0;
+      color: #4a1626;
+      border-radius: 4px;
+      z-index: 2;
+      transition: transform 1s ease 0.7s;
+      /* waits 0.7s for flap to open */
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      font-family: "Dancing Script", cursive;
+      font-size: 30px;
+      text-align: center;
+    }
+
+    .open .lt {
+      transform: translateY(-64%);
+      /* letter slides up out of envelope */
+    }
+
+    .ef {
+      inset: 0;
+      background: #e11d48;
+      /* V-shaped front pocket */
+      clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
+      border-radius: 6px;
+      z-index: 3;
+    }
+
+    .fl {
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 58%;
+      background: #881337;
+      /* Triangle flap */
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top;
+      transition: transform 0.8s ease, z-index 0s 0.4s;
+      z-index: 4;
+    }
+
+    .open .fl {
+      transform: rotateX(180deg);
+      /* flips up and over */
+      z-index: 1;
+      /* ends up behind the letter */
+    }
+
+    .sl {
+      left: 50%;
+      top: 58%;
+      width: 58px;
+      height: 58px;
+      margin: -29px 0 0 -29px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fca5a5, #b91c1c 70%);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+      color: #fff;
+      font-size: 26px;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      animation: beat 1.4s infinite;
+      transition: opacity 0.4s;
+    }
+
+    .open .sl {
+      opacity: 0;
+      animation: none;
+    }
+
+    /* ============================================================
+         PAPER (the typed letter)
+         ============================================================ */
+    .paper {
+      background: radial-gradient(circle at 20% 10%, #fffdf6, #f8ecd9);
+      color: #4a1626;
+      box-shadow: 0 30px 60px rgba(90, 0, 30, 0.35),
+        inset 0 0 60px rgba(180, 120, 60, 0.15);
+    }
+
+    /* ============================================================
+         FLIP CARDS
+         .card = clickable wrapper, .ci = the part that rotates,
+         .face = front and back sides, .bk = back side (pre-rotated)
+         ============================================================ */
+    .card {
+      perspective: 800px;
+      height: 210px;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .ci {
+      position: relative;
+      display: block;
+      height: 100%;
+      transition: transform 0.7s;
+      transform-style: preserve-3d;
+    }
+
+    .card.f .ci {
+      transform: rotateY(180deg);
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      border-radius: 20px 20px 6px 20px;
+    }
+
+    .bk {
+      transform: rotateY(180deg);
+    }
+
+    /* ============================================================
+         COUPON TICKETS (dashed border with punched-out side circles)
+         ============================================================ */
+    .tk {
+      position: relative;
+      background: var(--card);
+      border: 2px dashed var(--line);
+      border-radius: 14px;
+    }
+
+    .tk:before,
+    .tk:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px dashed var(--line);
+      margin-top: -11px;
+    }
+
+    .tk:before {
+      left: -12px;
+    }
+
+    .tk:after {
+      right: -12px;
+    }
+
+    /* Respect people who turn off motion in their device settings */
+    @media (prefers-reduced-motion: reduce) {
+
+      .env,
+      .sl,
+      .caret {
+        animation: none;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- React renders the whole site inside this div -->
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    /* ============================================================
+       1. EDIT THESE THREE PLACEHOLDERS
+       ============================================================ */
+    const HER1 = "Shreya Mishra";
+    const HER = "Shreya"
+    const ME = "Gauraang";
+    const START = "2026-08-14"; // the day you got together (YYYY-MM-DD)
+
+    /* ============================================================
+       2. YOUR CONTENT (replace anything in [brackets])
+       ============================================================ */
+
+    // The letter that types itself out. \n = new line.
+    const LETTER = `My dearest ${HER},
+
+Happy Girlfriend's Day. A card felt too small for what you mean to me, so I built you a tiny corner of the internet instead.
+
+You turn ordinary days into my favourite ones. Your smile, your face everything its just perfection i have no words to explain your importance and beauty 
+
+Scroll down. There are little surprises waiting for you.
+
+Forever yours,
+${ME}`;
+
+    // Flip cards: [emoji, title on front, text on back]
+    const REASONS = [
+      ["😂", "Your laugh", "It somehow makes even the most random moments better."],
+
+      ["🌙", "Talking", "Those random conversations that somehow become my favorite part of the day."],
+
+      ["🥰", "How you care", "Even the little things you do somehow make me feel noticed."],
+
+      ["✨", "Your little quirks", "The random little things you do that are slowly becoming my favorite things about you."],
+
+      ["🏡", "You feel comfortable", "Being around you feels easy, like I can just be myself."],
+
+      ["🌍", "Anywhere with you", "Honestly, even the most random place would be fun if we were there together."]
+    ];
+
+    // Timeline: [date, title, description]
+    const STORY = [
+      ["10th june ", "The day i saw you ", "I was sitting in the class looking at my new classmates and saw your gorgeous eyes."],
+      ["14 augest", "Me proposing", "lowkey thought i had no chance with you.."],
+      ["Today", "Still choosing you", "and will always choose you over anything 😘"],
+    ];
+
+    // Coupons: [emoji, text]
+    const COUPONS = [
+      ["🍕", "Any thing you wanna eat together"],
+      ["🎬", "movie sumtime in the future."],
+      ["💆", "A whole day together"],
+      ["🚗", "Any thing of you choice"],
+    ];
+
+    /* ============================================================
+       3. HELPER HOOK: typewriter effect
+       Returns [numberOfCharactersToShow, skipFunction].
+       It adds one character at a time, pausing longer at new lines.
+       ============================================================ */
+    function useType(text) {
+      const [n, setN] = useState(0);
+
+      useEffect(() => {
+        if (n >= text.length) return; // finished
+
+        const justHitNewline = n && text[n - 1] === "\n";
+        const delay = justHitNewline ? 260 : 28;
+
+        const timer = setTimeout(() => setN(n + 1), delay);
+        return () => clearTimeout(timer); // cleanup
+      }, [n]);
+
+      const skip = () => setN(text.length);
+      return [n, skip];
+    }
+
+    /* ============================================================
+       4. COMPONENTS
+       ============================================================ */
+
+    // Hearts and flowers drifting up in the background.
+    // useMemo makes the random values get created only once.
+    function Hearts() {
+      const hearts = useMemo(
+        () =>
+          Array.from({ length: 16 }, (_, i) => ({
+            left: Math.random() * 100, // % from left
+            size: 14 + Math.random() * 24, // font size in px
+            duration: 9 + Math.random() * 10, // seconds
+            delay: -Math.random() * 14, // negative = already mid-animation
+            emoji: i % 3 ? "💗" : "🌸",
+          })),
+        []
+      );
+
+      return (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 overflow-hidden pointer-events-none z-0"
+        >
+          {hearts.map((h, i) => (
+            <span
+              key={i}
+              className="fh absolute top-0"
+              style={{
+                left: h.left + "%",
+                fontSize: h.size,
+                animation: `floatUp ${h.duration}s linear ${h.delay}s infinite`,
+              }}
+            >
+              {h.emoji}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    // SCREEN 1: the envelope.
+    // Clicking it adds the "open" class, then after 2.6s we move on.
+    function Envelope({ onDone }) {
+      const [open, setOpen] = useState(false);
+
+      const openIt = () => {
+        if (open) return;
+        setOpen(true);
+        setTimeout(onDone, 2600);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-14 px-4 text-center">
+          <div className="fade">
+            <p
+              className="font-script text-4xl sm:text-5xl"
+              style={{ color: "var(--rose)" }}
+            >
+              A letter for {HER1}
+            </p>
+            <p className="mt-2" style={{ color: "var(--soft)" }}>
+              {open ? "Opening..." : "Tap the wax seal to open"}
+            </p>
+          </div>
+
+          <button
+            className={"env " + (open ? "open" : "")}
+            onClick={openIt}
+            aria-label="Open the envelope"
+          >
+            <span className="eb" />
+            <span className="lt">For {HER1} 💌</span>
+            <span className="ef" />
+            <span className="fl" />
+            <span className="sl">♥</span>
+          </button>
+        </div>
+      );
+    }
+
+    // SCREEN 2: the typed letter.
+    function Letter({ onNext }) {
+      const [n, skip] = useType(LETTER);
+      const done = n >= LETTER.length;
+
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="paper fade max-w-xl w-full rounded-md p-7 sm:p-11">
+            <h2
+              className="font-script text-4xl sm:text-5xl mb-5"
+              style={{ color: "#be123c" }}
+            >
+              Happy Girlfriend's Day 💖
+            </h2>
+
+            {/* Only show the first n characters of the letter */}
+            <p className="whitespace-pre-wrap font-serif text-lg leading-loose min-h-[17rem]">
+              {LETTER.slice(0, n)}
+              <span className="caret">|</span>
+            </p>
+
+            <div className="mt-6 flex justify-end">
+              {done ? (
+                <button
+                  onClick={onNext}
+                  className="px-6 py-3 rounded-full text-white font-serif shadow-lg hover:scale-105 transition"
+                  style={{ background: "#be123c" }}
+                >
+                  Open your surprises 💝
+                </button>
+              ) : (
+                <button
+                  onClick={skip}
+                  className="text-sm underline"
+                  style={{ color: "#9d4a62" }}
+                >
+                  Skip typing
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Section heading used on the main page.
+    function Title({ text, sub }) {
+      return (
+        <div className="text-center mb-10">
+          <h2 className="font-script text-5xl" style={{ color: "var(--rose)" }}>
+            {text}
+          </h2>
+          {sub && (
+            <p className="mt-2 max-w-md mx-auto" style={{ color: "var(--soft)" }}>
+              {sub}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // One flip card. `flipped` toggles the "f" class, which rotates it.
+    function FlipCard({ emoji, title, text }) {
+      const [flipped, setFlipped] = useState(false);
+
+      return (
+        <button
+          className={"card " + (flipped ? "f" : "")}
+          onClick={() => setFlipped(!flipped)}
+          aria-pressed={flipped}
+        >
+          <span className="ci">
+            {/* Front */}
+            <span
+              className="face"
+              style={{
+                background: "linear-gradient(135deg,#e11d48,#9f1239)",
+                color: "#fff",
+              }}
+            >
+              <span className="text-5xl">{emoji}</span>
+              <span className="font-serif text-xl mt-2">{title}</span>
+              <span className="text-xs mt-2 opacity-80">tap to flip</span>
+            </span>
+
+            {/* Back */}
+            <span
+              className="face bk"
+              style={{
+                background: "var(--card)",
+                border: "2px solid var(--line)",
+                color: "var(--ink)",
+              }}
+            >
+              <span className="text-sm leading-relaxed">{text}</span>
+            </span>
+          </span>
+        </button>
+      );
+    }
+
+    // Slider: the heart grows as you drag, message changes.
+    function LoveMeter() {
+      const [value, setValue] = useState(40);
+
+      let message;
+      if (value < 60) message = "Only that much? 🥺";
+      else if (value < 90) message = "Getting warmer...";
+      else if (value < 100) message = "Almost there...";
+      else message = "The slider isn't big enough. ∞ 💗";
+
+      return (
+        <div
+          className="max-w-md mx-auto text-center rounded-3xl p-8"
+          style={{ background: "var(--card)", border: "2px solid var(--line)" }}
+        >
+          <div
+            style={{
+              fontSize: 36 + value * 0.7,
+              transition: "font-size .2s",
+              lineHeight: 1.1,
+            }}
+            aria-hidden="true"
+          >
+            💖
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={value}
+            onChange={(e) => setValue(+e.target.value)}
+            className="w-full mt-5"
+            style={{ accentColor: "#e11d48" }}
+            aria-label="How much I love you"
+          />
+
+          <p className="mt-3 font-serif text-lg h-7">{message}</p>
+        </div>
+      );
+    }
+
+    // One coupon. Click Redeem to grey it out (click again to undo).
+    function Coupon({ emoji, text }) {
+      const [redeemed, setRedeemed] = useState(false);
+
+      return (
+        <div
+          className="tk p-5 flex items-center gap-4"
+          style={{ opacity: redeemed ? 0.55 : 1 }}
+        >
+          <span className="text-4xl">{emoji}</span>
+
+          <div className="flex-1">
+            <p className="font-serif text-lg">{text}</p>
+            <p className="text-xs" style={{ color: "var(--soft)" }}>
+              Valid forever, no expiry
+            </p>
+          </div>
+
+          <button
+            onClick={() => setRedeemed(!redeemed)}
+            className="px-4 py-2 rounded-full text-sm text-white"
+            style={{ background: redeemed ? "#6b7280" : "#be123c" }}
+          >
+            {redeemed ? "Redeemed ✓" : "Redeem"}
+          </button>
+        </div>
+      );
+    }
+
+    // The final question. "No" jumps to a random spot whenever you go near it.
+    function Ask({ burst }) {
+      const [yes, setYes] = useState(false);
+      const [pos, setPos] = useState({ x: 0, y: 0 });
+      const [tries, setTries] = useState(0);
+
+      // Move the No button somewhere random (kept inside the screen width)
+      const dodge = () => {
+        setPos({
+          x: (Math.random() - 0.5) * Math.min(260, innerWidth - 160),
+          y: (Math.random() - 0.5) * 150,
+        });
+        setTries((t) => t + 1);
+      };
+
+      // Yes: show the happy message and fire 8 waves of hearts
+      const sayYes = (e) => {
+        setYes(true);
+        const r = e.currentTarget.getBoundingClientRect();
+        for (let i = 0; i < 8; i++) {
+          setTimeout(() => burst(r.left + r.width / 2, r.top, 14), i * 220);
+        }
+      };
+
+      if (yes) {
+        return (
+          <div className="text-center fade">
+            <p className="font-script text-6xl" style={{ color: "var(--rose)" }}>
+              She said yes! 💖
+            </p>
+            <p className="mt-4 font-serif text-lg">
+              I love you, {HER}. Happy Girlfriend's Day.
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="text-center">
+          <p className="font-script text-5xl mb-2" style={{ color: "var(--rose)" }}>
+            {HER}, one more question...
+          </p>
+          <p className="font-serif text-xl mb-8">
+            Will you keep being my girlfriend?
+          </p>
+
+          <div className="flex items-center justify-center gap-6 h-40">
+            <button
+              onClick={sayYes}
+              className="px-10 py-4 rounded-full text-white text-xl shadow-xl hover:scale-110 transition"
+              style={{ background: "#be123c" }}
+            >
+              Yes 💗
+            </button>
+
+            <button
+              onPointerEnter={dodge}
+              onClick={dodge}
+              className="px-6 py-3 rounded-full transition-transform duration-200"
+              style={{
+                transform: `translate(${pos.x}px, ${pos.y}px)`,
+                background: "var(--card)",
+                border: "2px solid var(--line)",
+              }}
+            >
+              No
+            </button>
+          </div>
+
+          {tries > 2 && (
+            <p className="text-sm" style={{ color: "var(--soft)" }}>
+              The "No" button seems to be broken. Sorry about that.
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // SCREEN 3: the main page with all the sections.
+    function Site({ burst, replay }) {
+      // Days since START
+      const days = Math.max(
+        0,
+        Math.floor((Date.now() - new Date(START)) / 86400000)
+      );
+
+      const sectionClass = "max-w-4xl mx-auto px-5 py-20";
+
+      return (
+        <main className="fade">
+          {/* Hero */}
+          <section className="min-h-screen flex flex-col items-center justify-center text-center px-6">
+            <p className="text-lg" style={{ color: "var(--soft)" }}>
+              Happy Girlfriend's Day
+            </p>
+            <h1
+              className="font-script text-7xl sm:text-9xl my-4 leading-none"
+              style={{ color: "var(--rose)" }}
+            >
+              {HER}
+            </h1>
+            <p className="font-serif text-xl max-w-sm">
+              We've had <b>{days.toLocaleString()}</b> days together, and I'd
+              take every one of them again.
+            </p>
+            <a href="#why" className="mt-12 text-3xl animate-bounce" aria-label="Scroll down">
+              ⌄
+            </a>
+          </section>
+
+          {/* Reasons (flip cards) */}
+          <section id="why" className={sectionClass}>
+            <Title text="Reasons I love you" sub="Tap each card to flip it." />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {REASONS.map(([emoji, title, text]) => (
+                <FlipCard key={title} emoji={emoji} title={title} text={text} />
+              ))}
+            </div>
+          </section>
+
+          {/* Timeline */}
+          <section className={sectionClass}>
+            <Title text="Our story" />
+            <ol
+              className="relative max-w-xl mx-auto pl-8 border-l-2"
+              style={{ borderColor: "var(--line)" }}
+            >
+              {STORY.map(([date, title, text]) => (
+                <li key={title} className="mb-10 relative">
+                  {/* the dot on the line */}
+                  <span
+                    className="absolute -left-[41px] top-1 w-5 h-5 rounded-full"
+                    style={{
+                      background: "var(--rose)",
+                      boxShadow: "0 0 0 5px var(--bg)",
+                    }}
+                  />
+                  <p className="text-sm" style={{ color: "var(--soft)" }}>
+                    {date}
+                  </p>
+                  <h3 className="font-serif text-2xl">{title}</h3>
+                  <p className="mt-1 leading-relaxed">{text}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {/* Love meter */}
+          <section className={sectionClass}>
+            <Title text="How much do I love you?" sub="Go on, drag it." />
+            <LoveMeter />
+          </section>
+
+          {/* Coupons */}
+          <section className={sectionClass}>
+            <Title
+              text="Coupons, just for you"
+              sub="Redeem any time. I always honour them."
+            />
+            <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+              {COUPONS.map(([emoji, text]) => (
+                <Coupon key={text} emoji={emoji} text={text} />
+              ))}
+            </div>
+          </section>
+
+          {/* Final question */}
+          <section className={sectionClass + " min-h-[70vh] flex items-center justify-center"}>
+            <Ask burst={burst} />
+          </section>
+
+          {/* Footer */}
+          <footer className="text-center pb-16" style={{ color: "var(--soft)" }}>
+            <p className="font-script text-3xl">Made with love by {ME}</p>
+            <button onClick={replay} className="mt-3 underline text-sm">
+              Replay the envelope
+            </button>
+          </footer>
+        </main>
+      );
+    }
+
+    /* ============================================================
+       5. APP (controls which screen you see + click hearts)
+       stage: "env" -> "letter" -> "site"
+       ============================================================ */
+    function App() {
+      const [stage, setStage] = useState("env");
+      const [bits, setBits] = useState([]); // hearts currently flying
+
+      // Spawn `n` little emojis at screen position (x, y).
+      // They remove themselves after 1.4 seconds.
+      const burst = (x, y, n = 8) => {
+        const emojis = ["💖", "💗", "💕", "🌸", "✨"];
+
+        const newBits = Array.from({ length: n }, (_, i) => ({
+          id: Math.random(),
+          x,
+          y,
+          dx: (Math.random() - 0.5) * 240, // sideways travel
+          dy: -40 - Math.random() * 220, // upward travel
+          emoji: emojis[i % emojis.length],
+        }));
+
+        setBits((old) => [...old, ...newBits]);
+        setTimeout(
+          () => setBits((old) => old.filter((b) => !newBits.includes(b))),
+          1400
+        );
+      };
+
+      // Hearts on every tap/click anywhere on the page
+      useEffect(() => {
+        const onPress = (e) => burst(e.clientX, e.clientY, 5);
+        addEventListener("pointerdown", onPress);
+        return () => removeEventListener("pointerdown", onPress);
+      }, []);
+
+      // Switch screen and jump back to the top
+      const goTo = (screen) => {
+        setStage(screen);
+        scrollTo(0, 0);
+      };
+
+      return (
+        <>
+          <Hearts />
+
+          <div className="relative z-10">
+            {stage === "env" && <Envelope onDone={() => goTo("letter")} />}
+            {stage === "letter" && <Letter onNext={() => goTo("site")} />}
+            {stage === "site" && <Site burst={burst} replay={() => goTo("env")} />}
+          </div>
+
+          {/* The click/confetti hearts */}
+          {bits.map((b) => (
+            <span
+              key={b.id}
+              aria-hidden="true"
+              className="fixed pointer-events-none z-50 text-2xl"
+              style={{
+                left: b.x,
+                top: b.y,
+                "--dx": b.dx + "px",
+                "--dy": b.dy + "px",
+                animation: "burst 1.2s ease-out forwards",
+              }}
+            >
+              {b.emoji}
+            </span>
+          ))}
+        </>
+      );
+    }
+
+    // Start the app
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+
+</html>
